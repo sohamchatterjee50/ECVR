@@ -8,7 +8,7 @@ class Simulator(ABC):
     """Interface for a simulator."""
 
     @abstractmethod
-    def simulate_batch(self, batch: Batch) -> list[list[SimulationState]]:
+    def simulate_batch(self, batch: Batch, vr: bool) -> list[list[SimulationState]]:
         """
         Simulate the provided batch by simulating each contained scene.
 

@@ -13,6 +13,7 @@ def simulate_scenes(
     batch_parameters: BatchParameters,
     scenes: ModularRobotScene,
     record_settings: RecordSettings | None = None,
+    vr: bool = False
 ) -> list[SceneSimulationState]:
     """
     Simulate a scene.
@@ -34,6 +35,7 @@ def simulate_scenes(
     batch_parameters: BatchParameters,
     scenes: list[ModularRobotScene],
     record_settings: RecordSettings | None = None,
+    vr: bool = False
 ) -> list[list[SceneSimulationState]]:
     """
     Simulate multiple scenes.
@@ -49,11 +51,13 @@ def simulate_scenes(
     """
 
 
+
 def simulate_scenes(
     simulator: Simulator,
     batch_parameters: BatchParameters,
     scenes: ModularRobotScene | list[ModularRobotScene],
     record_settings: RecordSettings | None = None,
+    vr: bool = False
 ) -> list[SceneSimulationState] | list[list[SceneSimulationState]]:
     """
     Simulate one or more scenes.
@@ -73,7 +77,7 @@ def simulate_scenes(
     batch, modular_robot_to_multi_body_system_mappings = to_batch(
         scenes, batch_parameters, record_settings
     )
-    simulation_results = simulator.simulate_batch(batch)
+    simulation_results = simulator.simulate_batch(batch, vr=vr)
 
     results = [
         [

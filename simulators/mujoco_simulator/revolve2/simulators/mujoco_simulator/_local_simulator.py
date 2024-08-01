@@ -7,6 +7,7 @@ from revolve2.simulation.simulator import Batch, Simulator
 
 from ._simulate_manual_scene import simulate_manual_scene
 from ._simulate_scene import simulate_scene
+from ._simulate_scene_vr import simulate_scene_vr
 from .viewers import ViewerType
 
 
@@ -62,7 +63,7 @@ class LocalSimulator(Simulator):
             else viewer_type
         )
 
-    def simulate_batch(self, batch: Batch) -> list[list[SimulationState]]:
+    def simulate_batch(self, batch: Batch, vr: bool) -> list[list[SimulationState]]:
         """
         Simulate the provided batch by simulating each contained scene.
 
@@ -96,10 +97,50 @@ class LocalSimulator(Simulator):
             with concurrent.futures.ProcessPoolExecutor(
                 max_workers=self._num_simulators
             ) as executor:
-                futures = [
-                    executor.submit(
-                        simulate_scene,  # This is the function to call, followed by the parameters of the function
-                        scene_index,
+                if not vr:
+                    futures = [
+                        executor.submit(
+                            simulate_scene,  # This is the function to call, followed by the parameters of the function
+                            scene_index,
+                            scene,
+                            self._headless,
+                            batch.record_settings,
+                            self._start_paused,
+                            control_step,
+                            sample_step,
+                            batch.parameters.simulation_time,
+                            batch.parameters.simulation_timestep,
+                            self._cast_shadows,
+                            self._fast_sim,
+                            self._viewer_type,
+                        )
+                        for scene_index, scene in enumerate(batch.scenes)
+                    ]
+                else:
+                    futures = [
+                        executor.submit(
+                            simulate_scene_vr,  # This is the function to call, followed by the parameters of the function
+                            scene_index,
+                            scene,
+                            self._headless,
+                            batch.record_settings,
+                            self._start_paused,
+                            control_step,
+                            sample_step,
+                            batch.parameters.simulation_time,
+                            batch.parameters.simulation_timestep,
+                            self._cast_shadows,
+                            self._fast_sim,
+                            self._viewer_type,
+                        )
+                        for scene_index, scene in enumerate(batch.scenes)
+                    ]
+                results = [future.result() for future in futures]
+        else:
+            if not vr:
+                results = [
+                    simulate_scene(
+                        scene_index,  # This is the function to call, followed by the parameters of the function
                         scene,
                         self._headless,
                         batch.record_settings,
@@ -114,25 +155,24 @@ class LocalSimulator(Simulator):
                     )
                     for scene_index, scene in enumerate(batch.scenes)
                 ]
-                results = [future.result() for future in futures]
-        else:
-            results = [
-                simulate_scene(
-                    scene_index,  # This is the function to call, followed by the parameters of the function
-                    scene,
-                    self._headless,
-                    batch.record_settings,
-                    self._start_paused,
-                    control_step,
-                    sample_step,
-                    batch.parameters.simulation_time,
-                    batch.parameters.simulation_timestep,
-                    self._cast_shadows,
-                    self._fast_sim,
-                    self._viewer_type,
-                )
-                for scene_index, scene in enumerate(batch.scenes)
-            ]
+            else:
+                results = [
+                    simulate_scene_vr(
+                        scene_index,  # This is the function to call, followed by the parameters of the function
+                        scene,
+                        self._headless,
+                        batch.record_settings,
+                        self._start_paused,
+                        control_step,
+                        sample_step,
+                        batch.parameters.simulation_time,
+                        batch.parameters.simulation_timestep,
+                        self._cast_shadows,
+                        self._fast_sim,
+                        self._viewer_type,
+                    )
+                    for scene_index, scene in enumerate(batch.scenes)
+                ]
 
         logging.info("Finished batch.")
 

@@ -130,6 +130,11 @@ def scene_to_model(
         )
 
     xml = env_mjcf.to_xml_string()
+    filepath = f"Assets\\model.xml"
+
+    f = open(filepath, "w")
+    f.write(xml)
+    f.close
     assert isinstance(xml, str)
 
     model = mujoco.MjModel.from_xml_string(xml)

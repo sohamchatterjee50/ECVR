@@ -1,3 +1,4 @@
+import json
 import mujoco
 import numpy as np
 import numpy.typing as npt
@@ -48,6 +49,23 @@ class SimulationStateImpl(SimulationState):
         self._sensordata = data.sensordata.copy()
         self._abstraction_to_mujoco_mapping = abstraction_to_mujoco_mapping
         self._camera_views = camera_views
+    
+    def __str__(self):
+        return f"xPos:\n {self._xpos},\n xQuat:\n {self._xquat},\n qPos:\n {self._qpos}"
+
+    def __repr__(self) -> str:
+        # Prepare the object dictionary to be serialized
+        xpos = self._xpos.tolist() if hasattr(self._xpos, 'tolist') else self._xpos
+        xpos = np.concatenate(xpos).tolist()
+        xquat = self._xquat.tolist() if hasattr(self._xquat, 'tolist') else self._xquat
+        xquat = np.concatenate(xquat).tolist()
+        obj_dict = {
+            "xpos": xpos,
+            "xquat": xquat,
+            "qpos": self._qpos.tolist() if hasattr(self._qpos, 'tolist') else self._qpos
+        }
+        # Serialize the dictionary to a JSON-formatted string
+        return json.dumps(obj_dict)
 
     def get_rigid_body_relative_pose(self, rigid_body: RigidBody) -> Pose:
         """
