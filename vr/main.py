@@ -71,7 +71,7 @@ def main() -> None:
     
     For mujoco we can select either the `native` mujoco viewer (more performance) or our `custom` viewer (which is more flexible for adjustments).
     """
-    simulator = LocalSimulator(viewer_type="native")
+    simulator = LocalSimulator(viewer_type="native", headless=True)
 
     # `batch_parameters` are important parameters for simulation.
     # Here, we use the parameters that are standard in CI Group.
