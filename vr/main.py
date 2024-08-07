@@ -71,12 +71,14 @@ def main() -> None:
     
     For mujoco we can select either the `native` mujoco viewer (more performance) or our `custom` viewer (which is more flexible for adjustments).
     """
-    simulator = LocalSimulator(viewer_type="native", headless=True)
+    simulator = LocalSimulator(viewer_type="custom", headless=False)
 
     # `batch_parameters` are important parameters for simulation.
     # Here, we use the parameters that are standard in CI Group.
     batch_parameters = make_standard_batch_parameters()
-    batch_parameters.simulation_time = 240  # Here we update our simulation time.
+    batch_parameters.simulation_time = 90
+    batch_parameters.simulation_timestep = 0.01
+    batch_parameters.sampling_frequency = 10
 
     # Simulate the scene.
     # A simulator can run multiple sets of scenes sequentially; it can be reused.
