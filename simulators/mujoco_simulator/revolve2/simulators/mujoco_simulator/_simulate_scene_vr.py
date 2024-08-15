@@ -226,7 +226,7 @@ def simulate_scene_vr(
     print("SCENE STATE")
     print(repr(simulation_states[0]))
     
-    filepath = f"Assets\\animation_data.json"
+    filepath = os.path.join("Assets", "animation_data.json")
     f = open(filepath, "w")
 
     formatted_string = f"[{', '.join(map(repr, simulation_states))}]"

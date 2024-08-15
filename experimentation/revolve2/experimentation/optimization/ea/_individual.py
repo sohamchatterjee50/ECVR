@@ -41,6 +41,10 @@ class Individual(HasId, orm.MappedAsDataclass, Generic[TGenotype]):
         genotype: orm.Mapped[TGenotype] = orm.relationship()
         fitness: orm.Mapped[float] = orm.mapped_column(nullable=False)
 
+        # These two columns are added so more info on a specific robots lineage can be given in Unity
+        parent1_id: orm.Mapped[int | None] = orm.mapped_column(nullable=True, init=False)
+        parent2_id: orm.Mapped[int | None] = orm.mapped_column(nullable=True, init=False)
+
     # ----------------------
     # Implementation details
     # ----------------------
@@ -65,6 +69,14 @@ class Individual(HasId, orm.MappedAsDataclass, Generic[TGenotype]):
         @orm.declared_attr
         def fitness(cls) -> orm.Mapped[float]:  # noqa
             return cls.__fitness_impl()
+
+        @orm.declared_attr
+        def parent1_id(cls) -> orm.Mapped[int | None]:  # noqa
+            return cls.__parent1_id_impl()
+
+        @orm.declared_attr
+        def parent2_id(cls) -> orm.Mapped[int | None]:  # noqa
+            return cls.__parent2_id_impl()
 
     __type_tgenotype: ClassVar[Type[TGenotype]]  # type: ignore[misc]
     __population_table: ClassVar[str]
@@ -121,3 +133,19 @@ class Individual(HasId, orm.MappedAsDataclass, Generic[TGenotype]):
     @classmethod
     def __fitness_impl(cls) -> orm.Mapped[float]:
         return orm.mapped_column(nullable=False)
+
+    @classmethod
+    def __parent1_id_impl(cls) -> orm.Mapped[int | None]:
+        return orm.mapped_column(
+            sqlalchemy.ForeignKey(f"{cls.__tablename__}.id"), 
+            nullable=True,  # Nullable because a parent might not exist (e.g., for the first generation)
+            init=False,
+        )
+
+    @classmethod
+    def __parent2_id_impl(cls) -> orm.Mapped[int | None]:
+        return orm.mapped_column(
+            sqlalchemy.ForeignKey(f"{cls.__tablename__}.id"),
+            nullable=True,
+            init=False,
+        )

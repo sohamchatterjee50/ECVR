@@ -64,6 +64,9 @@ def main() -> None:
     """
     scene = ModularRobotScene(terrain=terrains.flat())
     scene.add_robot(robot)
+    scene.add_robot(robot)
+    scene.add_robot(robot)
+    scene.add_robot(robot)
 
     """
     After we have the scene ready we create a simulator that will perform the simulation.
@@ -71,7 +74,7 @@ def main() -> None:
     
     For mujoco we can select either the `native` mujoco viewer (more performance) or our `custom` viewer (which is more flexible for adjustments).
     """
-    simulator = LocalSimulator(viewer_type="custom", headless=False)
+    simulator = LocalSimulator(viewer_type="custom", headless=True)
 
     # `batch_parameters` are important parameters for simulation.
     # Here, we use the parameters that are standard in CI Group.

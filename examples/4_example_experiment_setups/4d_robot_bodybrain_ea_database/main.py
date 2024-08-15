@@ -2,6 +2,7 @@
 
 import logging
 from typing import Any
+from pyrr import Vector3
 
 import config
 import multineat
@@ -18,6 +19,7 @@ from database_components import (
 from evaluator import Evaluator
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
+from sqlalchemy.schema import CreateTable
 
 from revolve2.experimentation.database import OpenMethod, open_database_sqlite
 from revolve2.experimentation.evolution import ModularRobotEvolution
@@ -25,7 +27,11 @@ from revolve2.experimentation.evolution.abstract_elements import Reproducer, Sel
 from revolve2.experimentation.logging import setup_logging
 from revolve2.experimentation.optimization.ea import population_management, selection
 from revolve2.experimentation.rng import make_rng, seed_from_time
-
+from revolve2.modular_robot_simulation import ModularRobotScene, simulate_scenes
+from revolve2.simulation.scene import Pose
+from revolve2.simulators.mujoco_simulator import LocalSimulator
+from revolve2.ci_group import terrains
+from revolve2.ci_group.simulation_parameters import make_standard_batch_parameters
 
 class ParentSelector(Selector):
     """Selector class for parent selection."""
@@ -285,7 +291,6 @@ def run_experiment(dbengine: Engine) -> None:
         )
         save_to_db(dbengine, generation)
 
-
 def main() -> None:
     """Run the program."""
     # Set up logging.
@@ -293,7 +298,7 @@ def main() -> None:
 
     # Open the database, only if it does not already exists.
     dbengine = open_database_sqlite(
-        config.DATABASE_FILE, open_method=OpenMethod.NOT_EXISTS_AND_CREATE
+        config.DATABASE_FILE, open_method=OpenMethod.OVERWITE_IF_EXISTS
     )
     # Create the structure of the database.
     Base.metadata.create_all(dbengine)
@@ -301,6 +306,48 @@ def main() -> None:
     # Run the experiment several times.
     for _ in range(config.NUM_REPETITIONS):
         run_experiment(dbengine)
+
+    scene = ModularRobotScene(terrain=terrains.flat())
+
+    with Session(dbengine) as session:
+        # Query the latest generation
+        latest_generation = session.query(Generation).order_by(Generation.generation_index.desc()).first()
+    
+        if latest_generation:
+            # Load the population associated with the latest generation
+            population = session.query(Population).filter(Population.id == latest_generation.population_id).one()
+    
+            # Get all individuals in the population
+            individuals = session.query(Individual).filter(Individual.population_id == population.id).all()
+    
+            # Retrieve all genotypes for the individuals
+            genotypes = session.query(Genotype).filter(Genotype.id.in_([ind.genotype_id for ind in individuals])).all()
+            robots = []
+    
+            # Print the serialized_body of all genotypes
+            for genotype in genotypes:
+                robots.append(genotype.develop())
+            
+            poses = []
+            for i in range(len(robots)):
+                poses.append(Pose(Vector3([i,0,0])))
+            for robot, pose in zip(robots, poses):
+                scene.add_robot(robot, pose=pose)
+        else:
+            print("No generations found in the database.")
+    
+    simulator = LocalSimulator(viewer_type="custom", headless=True)
+    batch_parameters = make_standard_batch_parameters()
+    batch_parameters = make_standard_batch_parameters()
+    batch_parameters.simulation_time = 90
+    batch_parameters.simulation_timestep = 0.01
+    batch_parameters.sampling_frequency = 10
+    simulate_scenes(
+        simulator=simulator,
+        batch_parameters=batch_parameters,
+        scenes=scene,
+        vr=True,
+    )
 
 
 def save_to_db(dbengine: Engine, generation: Generation) -> None:

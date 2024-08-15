@@ -130,7 +130,7 @@ def scene_to_model(
         )
 
     xml = env_mjcf.to_xml_string()
-    filepath = f"Assets\\model.xml"
+    filepath = os.path.join("Assets", "model.xml")
 
     f = open(filepath, "w")
     f.write(xml)
