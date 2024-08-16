@@ -14,7 +14,7 @@ from database_components import (
     Generation,
     Genotype,
     Individual,
-    Population,
+    Population
 )
 from evaluator import Evaluator
 from sqlalchemy.engine import Engine
@@ -319,14 +319,12 @@ def main() -> None:
     
             # Get all individuals in the population
             individuals = session.query(Individual).filter(Individual.population_id == population.id).all()
-    
-            # Retrieve all genotypes for the individuals
-            genotypes = session.query(Genotype).filter(Genotype.id.in_([ind.genotype_id for ind in individuals])).all()
+
             robots = []
     
             # Print the serialized_body of all genotypes
-            for genotype in genotypes:
-                robots.append(genotype.develop())
+            for individual in individuals:
+                robots.append(individual.genotype.develop())
             
             poses = []
             for i in range(len(robots)):
