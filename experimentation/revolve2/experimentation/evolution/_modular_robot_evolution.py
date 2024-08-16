@@ -61,7 +61,11 @@ class ModularRobotEvolution(Evolution):
         """
         parents, parent_kwargs = self._parent_selection.select(population, **kwargs)
         children = self._reproducer.reproduce(parents, **parent_kwargs)
-        child_task_performance = self._evaluator.evaluate(children)
+        #child_task_performance = self._evaluator.evaluate(children)
+        child_task_performance = [0.0]
+        if self._learner is not None:
+            children, child_task_performance = self._learner.learn(children)
+        assert child_task_performance !=[0.0]
         survivors, *_ = self._survivor_selection.select(
             population,
             **kwargs,

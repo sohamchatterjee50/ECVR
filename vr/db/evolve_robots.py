@@ -103,27 +103,23 @@ class CrossoverReproducer(Reproducer):
 
     rng: np.random.Generator
     innov_db_body: multineat.InnovationDatabase
-    innov_db_brain: multineat.InnovationDatabase
 
     def __init__(
         self,
         rng: np.random.Generator,
         innov_db_body: multineat.InnovationDatabase,
-        innov_db_brain: multineat.InnovationDatabase,
     ):
         """
         Initialize the reproducer.
 
-        :param rng: The ranfom generator.
+        :param rng: The random generator.
         :param innov_db_body: The innovation database for the body.
-        :param innov_db_brain: The innovation database for the brain.
         """
         self.rng = rng
         self.innov_db_body = innov_db_body
-        self.innov_db_brain = innov_db_brain
 
     def reproduce(
-        self, population: npt.NDArray[np.int_], **kwargs: Any
+        self, **kwargs: Any
     ) -> list[Genotype]:
         """
         Reproduce the population by crossover.
@@ -136,15 +132,20 @@ class CrossoverReproducer(Reproducer):
         parent_population: Population | None = kwargs.get("parent_population")
         if parent_population is None:
             raise ValueError("No parent population given.")
-
-        offspring_genotypes = [
-            Genotype.crossover(
-                parent_population.individuals[parent1_i].genotype,
-                parent_population.individuals[parent2_i].genotype,
-                self.rng,
-            ).mutate(self.innov_db_body, self.innov_db_brain, self.rng)
-            for parent1_i, parent2_i in population
-        ]
+        offspring_genotypes: List[Genotype] = []
+        for parent_data in parent_population:
+            parent1_genotype, parent2_genotype, fitness1, fitness2, mutate_flag = parent_data
+            if parent2_genotype:
+                offspring_genotype.append(Genotype.crossover(
+                parent1_genotype,
+                parent2_genotype,
+                fitness1 >= fitness2
+                self.rng
+                ).mutate(self.innov_db_body, self.rng))
+            else if mutate_flag:
+                offspring_genotype.append(parent1_genotype).mutate((self.innov_db_body, self.rng))
+            else:
+                offspring_genotype.append(parent1_genotype)
         return offspring_genotypes
 
 def main() -> None:
@@ -156,16 +157,25 @@ def main() -> None:
         config.DATABASE_FILE, open_method=OpenMethod.OPEN_IF_EXISTS
     )
 
+    parent_pairs = []
+    # Get the selected parents
     with Session(dbengine) as session:
-        # Query the latest generation
+        # Query the latest generation based on its unique id
         latest_generation = session.query(Generation).order_by(Generation.id.desc()).first()
         if not latest_generation:
             raise Exception("The generation table is empty")
         parents = session.query(Parents).filter(parent_gen_id == latest_generation.id)
         if not parents:
             raise Exception("The parents table is empty")
-        for _ range
-
+        for parent_pair in parents:
+            parent_pairs.append([
+                parent_pair.parent1.genotype,
+                parent_pair.parent2.genotype if parent_pair.parent2 else None,
+                parent_pair.parent1.fitness,
+                parent_pair.parent2.fitness if parent_pair.parent2 else None,
+                parent_pair.mutate # This only matters if there is only one parent
+            ])
+    
         
 
 def save_to_db(dbengine: Engine, generation: Generation) -> None:
