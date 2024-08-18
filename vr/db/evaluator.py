@@ -1,7 +1,9 @@
 """Evaluator class."""
 
-from database_components import Genotype
+from pyrr import Vector3
 
+from revolve2.simulation.scene import Pose
+from revolve2.ci_group.interactive_objects import Ball
 from revolve2.ci_group import fitness_functions, terrains
 from revolve2.ci_group.simulation_parameters import make_standard_batch_parameters
 from revolve2.experimentation.evolution.abstract_elements import Evaluator as Eval
@@ -18,6 +20,7 @@ class Evaluator(Eval):
 
     _simulator: LocalSimulator
     _terrain: Terrain
+    _target_point = [(0.0, -3.0)]
 
     def __init__(
         self,
@@ -37,7 +40,7 @@ class Evaluator(Eval):
 
     def evaluate(
         self,
-        population: list[Genotype],
+        robots,
     ) -> list[float]:
         """
         Evaluate multiple robots.
@@ -47,12 +50,15 @@ class Evaluator(Eval):
         :param population: The robots to simulate.
         :returns: Fitnesses of the robots.
         """
-        robots = [genotype.develop() for genotype in population]
         # Create the scenes.
         scenes = []
         for robot in robots:
             scene = ModularRobotScene(terrain=self._terrain)
-            scene.add_robot(robot)
+            scene.add_robot(robot, Pose(Vector3([0.0, 0.0, 0.0])))
+            scene.add_interactive_object(
+                Ball(radius=0.1, mass=0.1, pose=Pose(
+                    Vector3([self._target_point[0][0], self._target_point[0][1], 0.005])))
+            )
             scenes.append(scene)
 
         # Simulate all scenes.
@@ -62,13 +68,12 @@ class Evaluator(Eval):
             scenes=scenes,
         )
 
-        # Calculate the xy displacements.
-        xy_displacements = [
-            fitness_functions.xy_displacement(
-                states[0].get_modular_robot_simulation_state(robot),
-                states[-1].get_modular_robot_simulation_state(robot),
+        # Calculate point navigation fitness
+        point_navigation_fitness = []
+        for robot, states in zip(robots, scene_states):
+            point_navigation = fitness_functions.point_navigation(
+                robot, states, self._target_point
             )
-            for robot, states in zip(robots, scene_states)
-        ]
+            point_navigation_fitness.append(point_navigation)
 
-        return xy_displacements
+        return point_navigation_fitness

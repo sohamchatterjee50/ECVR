@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, ClassVar, Generic, Optional, Type, TypeVar
+from typing import TYPE_CHECKING, Any, ClassVar, Generic, Optional, Type, TypeVar, ForwardRef
 from sqlalchemy import ForeignKey, Integer, Boolean
 import sqlalchemy.orm as orm
 from sqlalchemy.orm import Mapped, mapped_column
@@ -28,8 +28,8 @@ class Parents(HasId, orm.MappedAsDataclass, Generic[TIndividual]):
     if TYPE_CHECKING:
         parent1_id: Mapped[int] = mapped_column(nullable=False, init=False)
         parent2_id: Mapped[Optional[int]] = mapped_column(nullable=True, init=False)
-        parent_gen_id: Mapped[int] = mapped_column(nullable=False, init=False)
-        mutate: Mapped[bool] = mapped_column(nullable=False, default=True, init=False)
+        parent_gen_id: Mapped[int] = mapped_column(nullable=False)
+        mutate: Mapped[bool] = mapped_column(nullable=False, default=True)
         
         # New: Relationships to the 'TIndividual' objects for the parents
         parent1: Mapped[TIndividual] = orm.relationship(foreign_keys="Parents.parent1_id", lazy="joined")
@@ -67,10 +67,10 @@ class Parents(HasId, orm.MappedAsDataclass, Generic[TIndividual]):
 
     # ClassVars to store related table names for foreign key relations
     __type_tindividual: ClassVar[Type[TIndividual]]  # type: ignore[misc]
-    __generation_table: ClassVar[str] = "generation"
+    __generation_table: ClassVar[str]
 
     def __init_subclass__(
-        cls: Type[Self], **kwargs: dict[str, Any]
+        cls: Type[Self], generation_table: str, **kwargs: dict[str, Any]
     ) -> None:
         """
         Initialize a version of this class when it is subclassed.
@@ -82,8 +82,13 @@ class Parents(HasId, orm.MappedAsDataclass, Generic[TIndividual]):
         cls.__type_tindividual = generic_types[0]
 
         assert not isinstance(
-            cls.__type_tindividual, TypeVar
+            cls.__type_tindividual, ForwardRef
         ), "TIndividual generic argument cannot be a forward reference."
+
+        cls.__generation_table = generation_table
+        assert isinstance(
+            cls.__generation_table, str
+        ), "generation_table argument must be a string."
 
         super().__init_subclass__(**kwargs)  # type: ignore[arg-type]
 
@@ -112,7 +117,6 @@ class Parents(HasId, orm.MappedAsDataclass, Generic[TIndividual]):
             Integer,
             ForeignKey(f"{cls.__generation_table}.id"),
             nullable=False,
-            init=False,
         )
 
     @classmethod
@@ -121,5 +125,4 @@ class Parents(HasId, orm.MappedAsDataclass, Generic[TIndividual]):
             Boolean,
             nullable=False,
             default=True,
-            init=False,
         )

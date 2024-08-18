@@ -6,6 +6,9 @@ TPopulation = (
     Any  # An alias for Any signifying that a population can vary depending on use-case.
 )
 
+TExperiment = (
+    Any  # An alias for Any signifying that a population can vary depending on use-case.
+)
 
 class ModularRobotEvolution(Evolution):
     """An object to encapsulate the general functionality of an evolutionary process for modular robots."""
@@ -13,14 +16,14 @@ class ModularRobotEvolution(Evolution):
     _parent_selection: Selector
     _survivor_selection: Selector
     _learner: Learner | None
-    _evaluator: Evaluator | None
+    #_evaluator: Evaluator
     _reproducer: Reproducer
 
     def __init__(
         self,
         parent_selection: Selector,
         survivor_selection: Selector,
-        evaluator: Evaluator,
+        #evaluator: Evaluator,
         reproducer: Reproducer,
         learner: Learner | None = None,
     ) -> None:
@@ -35,11 +38,11 @@ class ModularRobotEvolution(Evolution):
         """
         self._parent_selection = parent_selection
         self._survivor_selection = survivor_selection
-        self._evaluator = evaluator
+        #self._evaluator = evaluator
         self._learner = learner
         self._reproducer = reproducer
 
-    def step(self, population: TPopulation, **kwargs: Any) -> TPopulation:
+    def step(self, **kwargs: Any) -> tuple[TPopulation, TExperiment, int]:
         """
         Step the current evolution by one iteration.
 
@@ -59,17 +62,17 @@ class ModularRobotEvolution(Evolution):
         :param kwargs: Additional keyword arguments to use in the step.
         :return: The population resulting from the step
         """
-        parents, parent_kwargs = self._parent_selection.select(population, **kwargs)
-        children = self._reproducer.reproduce(parents, **parent_kwargs)
+        #parents, parent_kwargs = self._parent_selection.select(population, **kwargs)
+        parent_pairs, experiment, generation_id = self.parent_selection.select()
+        children = self._reproducer.reproduce(parent_pairs)
         #child_task_performance = self._evaluator.evaluate(children)
         child_task_performance = [0.0]
         if self._learner is not None:
             children, child_task_performance = self._learner.learn(children)
         assert child_task_performance !=[0.0]
         survivors, *_ = self._survivor_selection.select(
-            population,
             **kwargs,
             children=children,
             child_task_performance=child_task_performance
         )
-        return survivors
+        return survivors, experiment, generation_id

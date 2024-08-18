@@ -10,7 +10,7 @@ from ._individual import Individual
 
 @dataclass
 class Parents(
-    Base, GenericParents[Individual], kw_only=True
+    Base, GenericParents[Individual], generation_table="generation", kw_only=True
 ):
     """Parents of individuals in a population."""
 

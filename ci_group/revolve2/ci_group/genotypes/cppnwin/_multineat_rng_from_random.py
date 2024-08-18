@@ -1,8 +1,8 @@
 import multineat
-import numpy as np
+from random import Random
 
 
-def multineat_rng_from_random(rng: np.random.Generator) -> multineat.RNG:
+def multineat_rng_from_random(rng: Random) -> multineat.RNG:
     """
     Create a multineat rng object from a numpy rng state.
 
@@ -10,5 +10,5 @@ def multineat_rng_from_random(rng: np.random.Generator) -> multineat.RNG:
     :returns: The multineat rng.
     """
     multineat_rng = multineat.RNG()
-    multineat_rng.Seed(rng.integers(0, 2**31))
+    multineat_rng.Seed(rng.randint(0, 2**31))
     return multineat_rng
