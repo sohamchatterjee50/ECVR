@@ -1,4 +1,5 @@
 import logging
+import json
 from typing import Any, List
 from random import Random
 
@@ -35,6 +36,12 @@ from revolve2.modular_robot.body.base import ActiveHinge
 from revolve2.modular_robot_simulation import ModularRobotScene, simulate_scenes
 from revolve2.simulators.mujoco_simulator import LocalSimulator
 
+def load_config():
+    with open('Assets/revolve2/vr/db/config.json', 'r') as file:
+        config = json.load(file)
+    return config
+
+config = load_config()
 
 def save_to_db(dbengine: Engine, generation: Generation) -> None:
     """
@@ -290,18 +297,18 @@ def run_experiment(dbengine: Engine) -> None:
     - crossover_reproducer: Allows us to generate offspring from parents.
     - modular_robot_evolution: The evolutionary process as a object that can be iterated.
     """
-    evaluator = Evaluator(headless=True, num_simulators=config.NUM_SIMULATORS)
+    evaluator = Evaluator(headless=True, num_simulators=config['NUM_SIMULATORS'])
     learner = CMAESLearner(
         evaluator=evaluator,
-        generations=config.CMAES_NUM_GENERATIONS,
-        initial_std=config.CMAES_INITIAL_STD,
-        pop_size=config.CMAES_POP_SIZE,
-        bounds=config.CMAES_BOUNDS,
+        generations=config['CMAES_NUM_GENERATIONS'],
+        initial_std=config['CMAES_INITIAL_STD'],
+        pop_size=config['CMAES_POP_SIZE'],
+        bounds=config['CMAES_BOUNDS'],
         seed=seed_from_time() % 2**32,
     )
     rng=seed_from_time()
     parent_selector = ParentSelector(
-        offspring_size=config.OFFSPRING_SIZE, rng=rng)
+        offspring_size=config['OFFSPRING_SIZE'], rng=rng)
     survivor_selector = SurvivorSelector(rng=rng)
     crossover_reproducer = CrossoverReproducer(
         rng=Random(), innov_db_body=innov_db_body
@@ -344,9 +351,9 @@ def run_experiment(dbengine: Engine) -> None:
 
     # Start the actual optimization process.
     logging.info("Start optimization process.")
-    while generation.generation_index < config.NUM_GENERATIONS:
+    while generation.generation_index < config['NUM_GENERATIONS']:
         logging.info(
-            f"Generation {generation.generation_index + 1} / {config.NUM_GENERATIONS}.")
+            f"Generation {generation.generation_index + 1} / {config['NUM_GENERATIONS']}.")
 
         """
         In contrast to the previous example we do not explicitly stat the order of operations here, but let the ModularRobotEvolution object do the scheduling.
@@ -389,7 +396,7 @@ def main() -> None:
 
     # Open the database, only if it does not already exists.
     dbengine = open_database_sqlite(
-        config.DATABASE_FILE, open_method=OpenMethod.OPEN_IF_EXISTS
+        config['DATABASE_FILE'], open_method=OpenMethod.OPEN_IF_EXISTS
     )
 
     if dbengine is None:

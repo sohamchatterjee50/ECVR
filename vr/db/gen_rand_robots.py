@@ -1,5 +1,6 @@
 from copy import deepcopy
 import logging
+import json
 from random import Random
 from typing import Any
 from pyrr import Vector3
@@ -34,6 +35,13 @@ from revolve2.ci_group import terrains
 from revolve2.ci_group.simulation_parameters import make_standard_batch_parameters
 from revolve2.simulation.scene import Pose
 
+def load_config():
+    with open('Assets/revolve2/vr/db/config.json', 'r') as file:
+        config = json.load(file)
+    return config
+
+config = load_config()
+
 def assert_random_genotypes(innov_db_body, initial_genotypes):
     final_init_genotypes = []
     for genotype in initial_genotypes:
@@ -49,7 +57,7 @@ def assert_random_genotypes(innov_db_body, initial_genotypes):
         while len(active_hinges) == 0 and cpg_network_structure.num_connections == 0:
             empty_bodies += 1
             new_body_genotype = Genotype.random(
-                grid_size=config.GRID_SIZE,
+                grid_size=config['GRID_SIZE'],
                 innov_db_body=innov_db_body,
                 rng=Random(),
             )
@@ -93,26 +101,26 @@ def run_experiment(dbengine: Engine) -> None:
         session.commit()
 
     # evaluator: Allows us to evaluate a population of modular robots.
-    evaluator = Evaluator(headless=True, num_simulators=config.NUM_SIMULATORS)
+    evaluator = Evaluator(headless=True, num_simulators=config['NUM_SIMULATORS'])
 
     # Create an initial population, as we cant start from nothing.
     logging.info("Generating initial population.")
     initial_genotypes = [
         Genotype.random(
-            grid_size=config.GRID_SIZE,
+            grid_size=config['GRID_SIZE'],
             innov_db_body=innov_db_body,
             rng=Random(),
         )
-        for _ in range(config.POPULATION_SIZE)
+        for _ in range(config['POPULATION_SIZE'])
     ]
 
-    evaluator = Evaluator(headless=True, num_simulators=config.NUM_SIMULATORS)
+    evaluator = Evaluator(headless=True, num_simulators=config['NUM_SIMULATORS'])
     learner = CMAESLearner(
         evaluator=evaluator,
-        generations=config.CMAES_NUM_GENERATIONS,
-        initial_std=config.CMAES_INITIAL_STD,
-        pop_size=config.CMAES_POP_SIZE,
-        bounds=config.CMAES_BOUNDS,
+        generations=config['CMAES_NUM_GENERATIONS'],
+        initial_std=config['CMAES_INITIAL_STD'],
+        pop_size=config['CMAES_POP_SIZE'],
+        bounds=config['CMAES_BOUNDS'],
         seed=seed_from_time() % 2**32,
     )
 
@@ -168,7 +176,7 @@ def main() -> None:
 
     # Open the database, overwrite if already exists.
     dbengine = open_database_sqlite(
-        config.DATABASE_FILE, open_method=OpenMethod.OVERWITE_IF_EXISTS
+        config['DATABASE_FILE'], open_method=OpenMethod.OVERWITE_IF_EXISTS
     )
     # Create the structure of the database.
     Base.metadata.create_all(dbengine)
