@@ -4,7 +4,6 @@ from typing import Any, List
 from random import Random
 
 from pyrr import Vector3
-import config
 import multineat
 import numpy as np
 import numpy.typing as npt
@@ -250,7 +249,6 @@ class InteractiveReproducer(Reproducer):
                 raise Exception("The generation table is empty")
             experiment = latest_generation.experiment
             gen_index = latest_generation.generation_index
-            logging.info(f"gnereation id: {latest_generation.id}")
             parents = session.query(Parents).filter(Parents.parent_gen_id == latest_generation.id).all()
             if not parents:
                 raise Exception("The parents table is empty")
@@ -259,7 +257,6 @@ class InteractiveReproducer(Reproducer):
                 parent1_genotype = parent_data.parent1.genotype
                 parent2_genotype = parent_data.parent2.genotype if parent_data.parent2 else None
                 parent1_fitness = parent_data.parent1.fitness
-                logging.info(f"parent 1 fitness: {parent1_fitness}")
                 parent2_fitness = parent_data.parent2.fitness if parent_data.parent2 else None
                 if parent2_genotype:
                     offspring_genotypes.append(Genotype.crossover(
@@ -316,7 +313,6 @@ def run_experiment(dbengine: Engine) -> None:
     interactive_reproducer = InteractiveReproducer(
         rng=Random(), innov_db_body=innov_db_body, dbengine=dbengine
     )
-
     logging.info("Breeding selected parents")
     children, experiment, generation_index = interactive_reproducer.reproduce()
     child_task_performance = [0.0]
@@ -351,16 +347,8 @@ def run_experiment(dbengine: Engine) -> None:
 
     # Start the actual optimization process.
     logging.info("Start optimization process.")
-    while generation.generation_index < config['NUM_GENERATIONS']:
-        logging.info(
-            f"Generation {generation.generation_index + 1} / {config['NUM_GENERATIONS']}.")
-
-        """
-        In contrast to the previous example we do not explicitly stat the order of operations here, but let the ModularRobotEvolution object do the scheduling.
-        This does not give a performance boost, but is more readable and less prone to errors due to mixing up the order.
-
-        Not that you are not restricted to the classical ModularRobotEvolution object, since you can adjust the step function as you want.
-        """
+    for _ in range(config['STEP_SIZE']-1): # STEP_SIZE indicates how many steps should be taken before the user does parent selection again
+        logging.info(f"Generation {generation.generation_index + 1} / {config['STEP_SIZE']}.")
         population = modular_robot_evolution.step(
             population
         )  # Step the evolution forward.
@@ -371,13 +359,12 @@ def run_experiment(dbengine: Engine) -> None:
             generation_index=generation.generation_index + 1,
             population=population,
         )
-        save_to_db(dbengine, generation)
+        save_to_db(dbengine, generation)       
     
     scene = ModularRobotScene(terrain=terrains.flat())
     for i, individual in enumerate(population.individuals):
         scene.add_robot(individual.genotype.develop(), pose = Pose(Vector3([i,0,0])))
     simulator = LocalSimulator(viewer_type="custom", headless=True)
-    batch_parameters = make_standard_batch_parameters()
     batch_parameters = make_standard_batch_parameters()
     batch_parameters.simulation_time = 90
     batch_parameters.simulation_timestep = 0.01

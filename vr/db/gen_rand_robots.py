@@ -5,7 +5,6 @@ from random import Random
 from typing import Any
 from pyrr import Vector3
 
-import config
 import multineat
 import numpy as np
 import numpy.typing as npt
@@ -16,7 +15,6 @@ from database_components import (
     Genotype,
     Individual,
     Population,
-    Parents,
 )
 from evaluator import Evaluator
 from learner import CMAESLearner
@@ -24,11 +22,10 @@ from revolve2.modular_robot.body.base._active_hinge import ActiveHinge
 from revolve2.modular_robot.brain.cpg._make_cpg_network_structure_neighbor import active_hinges_to_cpg_network_structure_neighbor
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
-from sqlalchemy.schema import CreateTable
 
 from revolve2.experimentation.database import OpenMethod, open_database_sqlite
 from revolve2.experimentation.logging import setup_logging
-from revolve2.experimentation.rng import make_rng, make_rng_time_seed, seed_from_time
+from revolve2.experimentation.rng import make_rng_time_seed, seed_from_time
 from revolve2.modular_robot_simulation import ModularRobotScene, simulate_scenes
 from revolve2.simulators.mujoco_simulator import LocalSimulator
 from revolve2.ci_group import terrains
