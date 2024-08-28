@@ -149,13 +149,11 @@ def run_experiment(dbengine: Engine) -> None:
         session.commit()
     
     scene = ModularRobotScene(terrain=terrains.flat())
-    individuals = population.individuals
-    for i, individual in enumerate(individuals):
-        scene.add_robot(individual.genotype.develop(), Pose(Vector3([i, 0, 0])))
+    for i, individual in enumerate(population.individuals):
+        scene.add_robot(individual.genotype.develop(), pose = Pose(Vector3([float(i), 0.0, 0.0])))
     simulator = LocalSimulator(viewer_type="custom", headless=True)
     batch_parameters = make_standard_batch_parameters()
-    batch_parameters = make_standard_batch_parameters()
-    batch_parameters.simulation_time = 90
+    batch_parameters.simulation_time = 120
     batch_parameters.simulation_timestep = 0.01
     batch_parameters.sampling_frequency = 10
     simulate_scenes(
@@ -176,11 +174,7 @@ def main() -> None:
         config['DATABASE_FILE'], open_method=OpenMethod.OVERWITE_IF_EXISTS
     )
     # Create the structure of the database.
-    Base.metadata.create_all(dbengine)
-
-    #for table in Base.metadata.sorted_tables:
-    #    print(str(CreateTable(table).compile(dbengine)) + ";\n")
-    
+    Base.metadata.create_all(dbengine)    
     run_experiment(dbengine)
 
 if __name__ == "__main__":

@@ -132,7 +132,7 @@ class SurvivorSelector(Selector):
                 "No offspring was passed with positional argument 'children' and / or 'child_task_performance'."
             )
 
-        original_survivors, offspring_survivors = population_management.steady_state(
+        original_survivors, offspring_survivors = population_management.generational(
             old_genotypes=[i.genotype for i in population.individuals],
             old_fitnesses=[i.fitness for i in population.individuals],
             new_genotypes=offspring,
@@ -252,7 +252,6 @@ class InteractiveReproducer(Reproducer):
             parents = session.query(Parents).filter(Parents.parent_gen_id == latest_generation.id).all()
             if not parents:
                 raise Exception("The parents table is empty")
-            experiment = latest_generation.experiment
             for parent_data in parents:
                 parent1_genotype = parent_data.parent1.genotype
                 parent2_genotype = parent_data.parent2.genotype if parent_data.parent2 else None
@@ -363,7 +362,7 @@ def run_experiment(dbengine: Engine) -> None:
     
     scene = ModularRobotScene(terrain=terrains.flat())
     for i, individual in enumerate(population.individuals):
-        scene.add_robot(individual.genotype.develop(), pose = Pose(Vector3([i,0,0])))
+        scene.add_robot(individual.genotype.develop(), pose = Pose(Vector3([float(i), 0.0, 0.0])))
     simulator = LocalSimulator(viewer_type="custom", headless=True)
     batch_parameters = make_standard_batch_parameters()
     batch_parameters.simulation_time = 90

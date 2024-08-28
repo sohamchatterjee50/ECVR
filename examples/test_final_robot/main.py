@@ -127,7 +127,7 @@ class SurvivorSelector(Selector):
                 "No offspring was passed with positional argument 'children' and / or 'child_task_performance'."
             )
 
-        original_survivors, offspring_survivors = population_management.steady_state(
+        original_survivors, offspring_survivors = population_management.generational(
             old_genotypes=[i.genotype for i in population.individuals],
             old_fitnesses=[i.fitness for i in population.individuals],
             new_genotypes=offspring,
