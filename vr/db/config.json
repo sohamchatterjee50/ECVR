@@ -1,18 +1,15 @@
 {
   "DATABASE_FILE": "Assets/database.sqlite",
-  "NUM_SIMULATORS": 8,
+  "NUM_SIMULATORS": 30,
   "POPULATION_SIZE": 5,
   "OFFSPRING_SIZE": 5,
-  "NUM_GENERATIONS": 0,
+  "NUM_GENERATIONS": 10,
   "CMAES_NUM_GENERATIONS": 1,
   "CMAES_INITIAL_STD": 0.5,
   "CMAES_POP_SIZE": 5,
-  "CMAES_BOUNDS": [
-    -1.0,
-    1.0
-  ],
+  "CMAES_BOUNDS": null,
   "GRID_SIZE": 22,
   "STEP_SIZE": 1,
-  "ROUNDS": 3,
+  "ROUNDS": 10,
   "ROUNDS_INDEX": 1
 }

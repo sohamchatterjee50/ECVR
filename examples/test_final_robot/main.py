@@ -298,7 +298,6 @@ def run_experiment(dbengine: Engine) -> None:
         generations=config.CMAES_NUM_GENERATIONS,
         initial_std=config.CMAES_INITIAL_STD,
         pop_size=config.CMAES_POP_SIZE,
-        bounds=config.CMAES_BOUNDS,
         seed=seed_from_time() % 2**32,
     )
     parent_selector = ParentSelector(
@@ -311,7 +310,7 @@ def run_experiment(dbengine: Engine) -> None:
     modular_robot_evolution = ModularRobotEvolution(
         parent_selection=parent_selector,
         survivor_selection=survivor_selector,
-        #evaluator=evaluator,
+        evaluator=evaluator,
         reproducer=crossover_reproducer,
         learner=learner,
     )
@@ -386,25 +385,6 @@ def run_experiment(dbengine: Engine) -> None:
             population=population,
         )
         save_to_db(dbengine, generation)
-
-        # # Find the new best robot
-        # best_robot = find_best_robot(best_robot, population)
-
-        # logging.info(f"Best robot until now: {best_robot.fitness}")
-        # # logging.info(f"Genotype pickle: {pickle.dumps(best_robot)!r}")
-        # # Save best robot pickle in file
-        # logging.info(f"Genotype pickle for generation: {generation_index + 1}")
-        # with open(f'best_robot_gen_{generation_index + 1}.pickle', 'wb') as handle:
-        #     pickle.dump(best_robot, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-        # Increase the generation index counter.
-        # generation_index += 1
-    
-    # # Save best robot pickle in file
-    # logging.info(f"Genotype pickle: {pickle.dumps(best_robot)!r}")
-    # with open('best_robot_final.pickle', 'wb') as handle:
-    #     pickle.dump(best_robot, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
 
 def main() -> None:
     """Run the program."""

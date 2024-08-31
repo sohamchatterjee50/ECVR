@@ -97,9 +97,6 @@ def run_experiment(dbengine: Engine) -> None:
         session.add(experiment)
         session.commit()
 
-    # evaluator: Allows us to evaluate a population of modular robots.
-    evaluator = Evaluator(headless=True, num_simulators=config['NUM_SIMULATORS'])
-
     # Create an initial population, as we cant start from nothing.
     logging.info("Generating initial population.")
     initial_genotypes = [
@@ -117,7 +114,6 @@ def run_experiment(dbengine: Engine) -> None:
         generations=config['CMAES_NUM_GENERATIONS'],
         initial_std=config['CMAES_INITIAL_STD'],
         pop_size=config['CMAES_POP_SIZE'],
-        bounds=config['CMAES_BOUNDS'],
         seed=seed_from_time() % 2**32,
     )
 
@@ -136,7 +132,6 @@ def run_experiment(dbengine: Engine) -> None:
             )
         ]
     )
-    logging.info(f"Population: {population}")
 
     # Finish the zeroth generation and save it to the database.
     generation = Generation(
@@ -149,8 +144,10 @@ def run_experiment(dbengine: Engine) -> None:
         session.commit()
     
     scene = ModularRobotScene(terrain=terrains.flat())
-    for i, individual in enumerate(population.individuals):
-        scene.add_robot(individual.genotype.develop(), pose = Pose(Vector3([float(i), 0.0, 0.0])))
+    i = 0
+    for individual in population.individuals:
+        scene.add_robot(individual.genotype.develop(), pose = Pose(Vector3([i, 0.0, 0.0])))
+        i += 2
     simulator = LocalSimulator(viewer_type="custom", headless=True)
     batch_parameters = make_standard_batch_parameters()
     batch_parameters.simulation_time = 120
@@ -171,7 +168,7 @@ def main() -> None:
 
     # Open the database, overwrite if already exists.
     dbengine = open_database_sqlite(
-        config['DATABASE_FILE'], open_method=OpenMethod.OVERWITE_IF_EXISTS
+        config['DATABASE_FILE'], open_method=OpenMethod.OPEN_OR_CREATE
     )
     # Create the structure of the database.
     Base.metadata.create_all(dbengine)    

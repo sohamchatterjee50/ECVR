@@ -299,7 +299,6 @@ def run_experiment(dbengine: Engine) -> None:
         generations=config['CMAES_NUM_GENERATIONS'],
         initial_std=config['CMAES_INITIAL_STD'],
         pop_size=config['CMAES_POP_SIZE'],
-        bounds=config['CMAES_BOUNDS'],
         seed=seed_from_time() % 2**32,
     )
     rng=seed_from_time()
@@ -361,8 +360,10 @@ def run_experiment(dbengine: Engine) -> None:
         save_to_db(dbengine, generation)       
     
     scene = ModularRobotScene(terrain=terrains.flat())
-    for i, individual in enumerate(population.individuals):
-        scene.add_robot(individual.genotype.develop(), pose = Pose(Vector3([float(i), 0.0, 0.0])))
+    i = 0
+    for individual in population.individuals:
+        scene.add_robot(individual.genotype.develop(), pose = Pose(Vector3([i, 0.0, 0.0])))
+        i += 2
     simulator = LocalSimulator(viewer_type="custom", headless=True)
     batch_parameters = make_standard_batch_parameters()
     batch_parameters.simulation_time = 90

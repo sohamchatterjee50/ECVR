@@ -29,7 +29,7 @@ class CMAESLearner(Learner):
     def __init__(self,
                  evaluator: Evaluator,
                  generations: int,
-                 initial_std: float, pop_size: int, bounds: list[float], seed):
+                 initial_std: float, pop_size: int, seed):
         self._reward_function = evaluator
         self._options = {
             "popsize": pop_size,
