@@ -54,8 +54,6 @@ def save_to_db(dbengine: Engine, generation: Generation) -> None:
         session.add(generation)
         session.commit()
 
-
-
 class ParentSelector(Selector):
     """Selector class for parent selection."""
 
@@ -345,8 +343,11 @@ def run_experiment(dbengine: Engine) -> None:
 
     # Start the actual optimization process.
     logging.info("Start optimization process.")
-    for _ in range(config['STEP_SIZE']-1): # STEP_SIZE indicates how many steps should be taken before the user does parent selection again
-        logging.info(f"Generation {generation.generation_index + 1} / {config['STEP_SIZE']}.")
+    for _ in range(config['ROUND_LENGTH']-1): # ROUND_LENGTH indicates how many generations should be evolved before the user does parent selection again
+        # We don't want the generation index to overtake the max amount of generations
+        if(generation.generation_index+1 > config['NUM_GENERATIONS']):
+            break
+        logging.info(f"Generation {generation.generation_index + 1} / {config['NUM_GENERATIONS']}.")
         population = modular_robot_evolution.step(
             population
         )  # Step the evolution forward.

@@ -1,5 +1,5 @@
 {
-  "DATABASE_FILE": "Assets/database.sqlite",
+  "DATABASE_FILE": "temp_database.sqlite",
   "NUM_SIMULATORS": 30,
   "POPULATION_SIZE": 5,
   "OFFSPRING_SIZE": 5,
@@ -8,8 +8,7 @@
   "CMAES_INITIAL_STD": 0.5,
   "CMAES_POP_SIZE": 5,
   "CMAES_BOUNDS": null,
-  "GRID_SIZE": 22,
-  "STEP_SIZE": 1,
-  "ROUNDS": 10,
-  "ROUNDS_INDEX": 1
+  "GRID_SIZE": 44,
+  "ROUND_LENGTH": 1,
+  "GENERATION_INDEX": 2
 }

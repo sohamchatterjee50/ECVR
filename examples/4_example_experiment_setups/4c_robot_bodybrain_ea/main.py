@@ -3,6 +3,7 @@
 import logging
 import pickle
 from typing import Any
+from pyrr import Vector3
 
 import config
 import multineat
@@ -12,11 +13,16 @@ from evaluator import Evaluator
 from genotype import Genotype
 from individual import Individual
 
+from revolve2.ci_group import terrains
+from revolve2.ci_group.simulation_parameters import make_standard_batch_parameters
 from revolve2.experimentation.evolution import ModularRobotEvolution
 from revolve2.experimentation.evolution.abstract_elements import Reproducer, Selector
 from revolve2.experimentation.logging import setup_logging
 from revolve2.experimentation.optimization.ea import population_management, selection
 from revolve2.experimentation.rng import make_rng_time_seed
+from revolve2.modular_robot_simulation import ModularRobotScene, simulate_scenes
+from revolve2.simulators.mujoco_simulator import LocalSimulator
+from revolve2.simulation.scene import Pose
 
 
 class ParentSelector(Selector):
@@ -244,6 +250,23 @@ def main() -> None:
         Individual(genotype, fitness)
         for genotype, fitness in zip(initial_genotypes, initial_fitnesses, strict=True)
     ]
+
+    scene = ModularRobotScene(terrain=terrains.flat())
+    i = 0
+    for individual in population.individuals:
+        scene.add_robot(individual.genotype.develop(), pose = Pose(Vector3([i, 0.0, 0.0])))
+        i += 1
+    simulator = LocalSimulator(viewer_type="custom", headless=False)
+    batch_parameters = make_standard_batch_parameters()
+    #batch_parameters.simulation_time = 120
+    batch_parameters.simulation_timestep = 0.01
+    batch_parameters.sampling_frequency = 10
+    simulate_scenes(
+        simulator=simulator,
+        batch_parameters=batch_parameters,
+        scenes=scene,
+        vr=False,
+    )
 
     # Save the best robot
     best_robot = find_best_robot(None, population)

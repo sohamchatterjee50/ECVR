@@ -399,7 +399,8 @@ def main() -> None:
     Base.metadata.create_all(dbengine)
 
     # Run the experiment several times.
-    for _ in range(config.NUM_REPETITIONS):
+    for i in range(config.NUM_REPETITIONS):
+        logging.info(f"Repetition {i+1}")
         run_experiment(dbengine)
 
 

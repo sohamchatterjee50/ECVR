@@ -1,6 +1,6 @@
 """Configuration parameters for this example."""
 
-DATABASE_FILE = "Assets/database.sqlite"
+DATABASE_FILE = "Assets/ea_database.sqlite"
 NUM_REPETITIONS = 1
 NUM_SIMULATORS = 8
 POPULATION_SIZE = 2

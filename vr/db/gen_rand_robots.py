@@ -166,7 +166,7 @@ def main() -> None:
     # Set up logging.
     setup_logging(file_name="log.txt")
 
-    # Open the database, overwrite if already exists.
+    # Open the database, create if it doesn't exist.
     dbengine = open_database_sqlite(
         config['DATABASE_FILE'], open_method=OpenMethod.OPEN_OR_CREATE
     )

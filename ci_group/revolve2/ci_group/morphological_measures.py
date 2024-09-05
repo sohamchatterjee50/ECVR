@@ -618,3 +618,27 @@ class MorphologicalMeasures(Generic[TModule]):
         :returns: Symmetry measurement.
         """
         return max(self.xy_symmetry, self.xz_symmetry, self.yz_symmetry)
+
+    @property
+    def mix_active_hinge_brick(self) -> int:
+        """
+        Determine if the robot has a mix of bricks and active hinges.
+
+        :returns: 1 if both types of modules are present, 0 otherwise.
+        """
+        has_bricks = len(self.bricks) > 0
+        has_active_hinges = len(self.active_hinges) > 0
+        return int(has_bricks and has_active_hinges)
+    
+    @property
+    def core_only(self) -> int:
+        """
+        Determine if the robot has only the core, i.e. it has no active
+        hinges or bricks.
+
+        :returns: 1 if the robot only has the core, 0 otherwise.
+        """
+        has_no_bricks = len(self.bricks) == 0
+        has_no_active_hinges = len(self.active_hinges) == 0
+        return int(has_no_bricks and has_no_active_hinges)
+    
