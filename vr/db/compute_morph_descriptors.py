@@ -10,7 +10,7 @@ from matplotlib import pyplot as plt
 import logging
 from revolve2.experimentation.logging import setup_logging
 
-def process_database(db_path, label, measure_name):
+def process_database(db_path, label, measure_name, start_id = None, end_id = None):
     """
     Process a single database and return the aggregated generation data 
     for the specified morphological measure with the specified label.
@@ -34,8 +34,22 @@ def process_database(db_path, label, measure_name):
     generation_data = []
     
     with Session(dbengine) as session:
-        generations = session.query(Generation).order_by(Generation.id.asc()).all()
-        print(f"Generation id: {generations.id}")
+        generations = None
+        if start_id and end_id:
+            generations = session.query(Generation).filter(
+                Generation.id >= start_id,
+                Generation.id <= end_id
+            ).order_by(Generation.id.asc()).all()
+        elif start_id:
+            generations = session.query(Generation).filter(
+                Generation.id >= start_id
+            ).order_by(Generation.id.asc()).all()
+        elif end_id:
+            generations = session.query(Generation).filter(
+                Generation.id <= end_id
+            ).order_by(Generation.id.asc()).all()
+        else:
+            generations = session.query(Generation).order_by(Generation.id.asc()).all()
         for generation in generations:
             for individual in generation.population.individuals:
                 body = individual.genotype.develop_body()
@@ -55,7 +69,7 @@ def process_database(db_path, label, measure_name):
     
     return agg_per_generation
 
-def plot_measure_across_databases(db_paths, labels, measure_names):
+def plot_measure_across_databases(db_paths, labels, measure_names, start_id, end_id):
     """
     Plot the specified morphological measure across generations for multiple databases.
     
@@ -70,7 +84,7 @@ def plot_measure_across_databases(db_paths, labels, measure_names):
         combined_data = pd.DataFrame()
 
         for db_path, label in zip(db_paths, labels):
-            data = process_database(db_path, label, measure_name)
+            data = process_database(db_path, label, measure_name, start_id, end_id)
             combined_data = pd.concat([combined_data, data])
 
         # Plotting
@@ -97,7 +111,7 @@ def plot_measure_across_databases(db_paths, labels, measure_names):
         plt.legend()
         plt.grid(True)
         plt.tight_layout()
-        plot_name = f"figs/combined_{measure_name}_plot.png"
+        plot_name = f"figs2/less_than_10_modules/combined_{measure_name}_plot.png"
         # Save the plot
         plt.savefig(plot_name)
         logging.info(f"Plot for {measure_name} saved in {plot_name}.")
@@ -105,10 +119,12 @@ def plot_measure_across_databases(db_paths, labels, measure_names):
 
 def main():
     setup_logging(file_name="log.txt")
-    db_paths = ["iea_database.sqlite", "ea_database.sqlite"]
+    db_paths = ["databases/iea_database.sqlite", "databases/ea12_database.sqlite"]
     labels = ["IEA", "EA"]
-    measure_names = ["num_active_hinges", "num_bricks", "num_modules", "branching", "symmetry", "mix_active_hinge_brick", "core_only"]
-    process_database(db_paths, labels, measure_names)
+    measure_names = ["num_modules", "core_only"]
+    start_id = 100
+    end_id = 132
+    plot_measure_across_databases(db_paths, labels, measure_names, start_id, end_id)
 
 if __name__ == "__main__":
     main()
