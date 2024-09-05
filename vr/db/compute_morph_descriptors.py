@@ -34,7 +34,7 @@ def process_database(db_path, label, measure_name):
     generation_data = []
     
     with Session(dbengine) as session:
-        generations = session.query(Generation).order_by(Generation.id.desc()).first()
+        generations = session.query(Generation).order_by(Generation.id.asc()).all()
         print(f"Generation id: {generations.id}")
         for generation in generations:
             for individual in generation.population.individuals:

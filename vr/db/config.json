@@ -1,5 +1,5 @@
 {
-  "DATABASE_FILE": "temp_database.sqlite",
+  "DATABASE_FILE": "Assets/temp_database.sqlite",
   "NUM_SIMULATORS": 30,
   "POPULATION_SIZE": 5,
   "OFFSPRING_SIZE": 5,
@@ -10,5 +10,5 @@
   "CMAES_BOUNDS": null,
   "GRID_SIZE": 44,
   "ROUND_LENGTH": 1,
-  "GENERATION_INDEX": 2
+  "GENERATION_INDEX": 3
 }
