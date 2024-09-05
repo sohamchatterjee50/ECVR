@@ -159,8 +159,8 @@ def plot_diversity_over_generations():
     setup_logging()
 
     # Process both databases
-    iea_data = process_database('iea_database.sqlite')
-    ea_data = process_database('ea12_database.sqlite')
+    iea_data = process_database('databases/iea_database.sqlite')
+    ea_data = process_database('databases/ea12_database.sqlite')
 
     # Initialize the plot
     plt.figure(figsize=(10, 6))
@@ -170,13 +170,11 @@ def plot_diversity_over_generations():
         iea_data["generation_index"],
         iea_data["mean_diversity_mean"],
         label="IEA Mean Diversity",
-        color="b",
     )
     plt.fill_between(
         iea_data["generation_index"],
         iea_data["mean_diversity_mean"] - iea_data["mean_diversity_std"],
         iea_data["mean_diversity_mean"] + iea_data["mean_diversity_std"],
-        color="b",
         alpha=0.2,
     )
 
@@ -185,13 +183,11 @@ def plot_diversity_over_generations():
         ea_data["generation_index"],
         ea_data["mean_diversity_mean"],
         label="EA Mean Diversity",
-        color="r",
     )
     plt.fill_between(
         ea_data["generation_index"],
         ea_data["mean_diversity_mean"] - ea_data["mean_diversity_std"],
         ea_data["mean_diversity_mean"] + ea_data["mean_diversity_std"],
-        color="r",
         alpha=0.2,
     )
 
