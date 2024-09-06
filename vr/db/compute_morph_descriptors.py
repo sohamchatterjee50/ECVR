@@ -128,7 +128,8 @@ def main():
     labels = ["IEA", "EA"]
     # I'm using num_modules instead of size bc they look the same except size is
     # a ratio from 0 to 1 whereas num_modules is 1-20
-    measure_names = ["active_hinges_ratio", "bricks_ratio"]
+    measure_names = ["branching", "limbs", "length_of_limbs", "coverage", "symmetry", "size", "num_modules", 
+                     "core_only", "mixed", "active_hinges_ratio", "bricks_ratio"]
     #start_id = 34
     #end_id = 66
     folders = ["maximize_size", "passive_hinge_combo", "maximize_passive_bricks", "less_than_10_modules"]

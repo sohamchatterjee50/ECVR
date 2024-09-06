@@ -648,9 +648,9 @@ class MorphologicalMeasures(Generic[TModule]):
     
     @property
     def active_hinges_ratio(self) -> float:
-        return self.num_active_hinges/20
+        return self.num_active_hinges/19
     
     @property
     def bricks_ratio(self) -> float:
-        return self.num_bricks/20
+        return self.num_bricks/19
     
