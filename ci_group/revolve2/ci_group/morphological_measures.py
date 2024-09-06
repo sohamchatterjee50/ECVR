@@ -620,7 +620,7 @@ class MorphologicalMeasures(Generic[TModule]):
         return max(self.xy_symmetry, self.xz_symmetry, self.yz_symmetry)
 
     @property
-    def mix_active_hinge_brick(self) -> int:
+    def mixed(self) -> int:
         """
         Determine if the robot has a mix of bricks and active hinges.
 
@@ -641,4 +641,16 @@ class MorphologicalMeasures(Generic[TModule]):
         has_no_bricks = len(self.bricks) == 0
         has_no_active_hinges = len(self.active_hinges) == 0
         return int(has_no_bricks and has_no_active_hinges)
+    
+    @property
+    def size(self) -> float:
+        return self.num_modules/20
+    
+    @property
+    def active_hinges_ratio(self) -> float:
+        return self.num_active_hinges/20
+    
+    @property
+    def bricks_ratio(self) -> float:
+        return self.num_bricks/20
     

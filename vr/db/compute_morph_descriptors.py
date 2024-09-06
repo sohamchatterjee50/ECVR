@@ -35,19 +35,24 @@ def process_database(db_path, label, measure_name, start_id = None, end_id = Non
     
     with Session(dbengine) as session:
         generations = None
-        if start_id and end_id:
+        if db_path == "databases/iea_database.sqlite":
             generations = session.query(Generation).filter(
                 Generation.id >= start_id,
                 Generation.id <= end_id
             ).order_by(Generation.id.asc()).all()
-        elif start_id:
-            generations = session.query(Generation).filter(
-                Generation.id >= start_id
-            ).order_by(Generation.id.asc()).all()
-        elif end_id:
-            generations = session.query(Generation).filter(
-                Generation.id <= end_id
-            ).order_by(Generation.id.asc()).all()
+        #if start_id and end_id:
+        #    generations = session.query(Generation).filter(
+        #        Generation.id >= start_id,
+        #        Generation.id <= end_id
+        #    ).order_by(Generation.id.asc()).all()
+        #elif start_id:
+        #    generations = session.query(Generation).filter(
+        #        Generation.id >= start_id
+        #    ).order_by(Generation.id.asc()).all()
+        #elif end_id:
+        #    generations = session.query(Generation).filter(
+        #        Generation.id <= end_id
+        #    ).order_by(Generation.id.asc()).all()
         else:
             generations = session.query(Generation).order_by(Generation.id.asc()).all()
         for generation in generations:
@@ -69,7 +74,7 @@ def process_database(db_path, label, measure_name, start_id = None, end_id = Non
     
     return agg_per_generation
 
-def plot_measure_across_databases(db_paths, labels, measure_names, start_id, end_id):
+def plot_measure_across_databases(db_paths, labels, measure_names, start_id, end_id, folder):
     """
     Plot the specified morphological measure across generations for multiple databases.
     
@@ -89,13 +94,13 @@ def plot_measure_across_databases(db_paths, labels, measure_names, start_id, end
 
         # Plotting
         plt.figure(figsize=(10, 6))
-
+        title = measure_name.replace('num', 'number_of').replace('_', ' ').replace('ratio', '').title().replace('Of', 'of')
         for label, group_data in combined_data.groupby('label'):
             # Plot mean measure with shading for standard deviation for each database
             plt.plot(
                 group_data['generation_index'],
                 group_data['mean_measure'],
-                label=f'Mean {measure_name.capitalize()} ({label})'
+                label=f'Mean {title} ({label})'
             )
             plt.fill_between(
                 group_data['generation_index'],
@@ -106,12 +111,12 @@ def plot_measure_across_databases(db_paths, labels, measure_names, start_id, end
 
         # Configure plot aesthetics
         plt.xlabel("Generation Index")
-        plt.ylabel(f"Mean {measure_name.capitalize()}")
-        plt.title(f"Mean {measure_name.capitalize()} Across Generations")
+        plt.ylabel(f"Mean {title}")
+        plt.title(f"Mean {title} Across Generations")
         plt.legend()
         plt.grid(True)
         plt.tight_layout()
-        plot_name = f"figs2/less_than_10_modules/combined_{measure_name}_plot.png"
+        plot_name = f"{folder}/combined_{measure_name}_plot.png"
         # Save the plot
         plt.savefig(plot_name)
         logging.info(f"Plot for {measure_name} saved in {plot_name}.")
@@ -119,12 +124,25 @@ def plot_measure_across_databases(db_paths, labels, measure_names, start_id, end
 
 def main():
     setup_logging(file_name="log.txt")
-    db_paths = ["databases/iea_database.sqlite", "databases/ea12_database.sqlite"]
+    db_paths = ["databases/iea_database.sqlite", "databases/ea3_database.sqlite"]
     labels = ["IEA", "EA"]
-    measure_names = ["num_modules", "core_only"]
-    start_id = 100
-    end_id = 132
-    plot_measure_across_databases(db_paths, labels, measure_names, start_id, end_id)
+    # I'm using num_modules instead of size bc they look the same except size is
+    # a ratio from 0 to 1 whereas num_modules is 1-20
+    measure_names = ["active_hinges_ratio", "bricks_ratio"]
+    #start_id = 34
+    #end_id = 66
+    folders = ["maximize_size", "passive_hinge_combo", "maximize_passive_bricks", "less_than_10_modules"]
+    start_id = 1
+    end_id = 33
+    i = 0
+    while True:
+        folder = f"figs/figs_ea3/{folders[i]}"
+        plot_measure_across_databases(db_paths, labels, measure_names, start_id, end_id, folder)
+        start_id += 33
+        end_id += 33
+        i += 1
+        if(start_id > 100):
+            break
 
 if __name__ == "__main__":
     main()
