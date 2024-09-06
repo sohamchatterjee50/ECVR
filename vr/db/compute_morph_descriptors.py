@@ -94,7 +94,7 @@ def plot_measure_across_databases(db_paths, labels, measure_names, start_id, end
 
         # Plotting
         plt.figure(figsize=(10, 6))
-        title = measure_name.replace('num', 'number_of').replace('_', ' ').replace('ratio', '').title().replace('Of', 'of')
+        title = measure_name.replace('num', 'number_of').replace('_ratio', '').replace('_only', '').replace('_', ' ').title().replace('Of', 'of')
         for label, group_data in combined_data.groupby('label'):
             # Plot mean measure with shading for standard deviation for each database
             plt.plot(
@@ -128,8 +128,7 @@ def main():
     labels = ["IEA", "EA"]
     # I'm using num_modules instead of size bc they look the same except size is
     # a ratio from 0 to 1 whereas num_modules is 1-20
-    measure_names = ["branching", "limbs", "length_of_limbs", "coverage", "symmetry", "size", "num_modules", 
-                     "core_only", "mixed", "active_hinges_ratio", "bricks_ratio"]
+    measure_names = ["core_only","active_hinges_ratio", "bricks_ratio"]
     #start_id = 34
     #end_id = 66
     folders = ["maximize_size", "passive_hinge_combo", "maximize_passive_bricks", "less_than_10_modules"]
